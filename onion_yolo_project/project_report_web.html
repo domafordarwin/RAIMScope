@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAIMScope | 양파 체세포 분열 탐지 보고서</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17201b;
+      --muted: #5d6962;
+      --line: #d9e2dc;
+      --paper: #f7faf7;
+      --panel: #ffffff;
+      --leaf: #2f7d51;
+      --leaf-deep: #185b3b;
+      --cell: #b85068;
+      --amber: #c98a24;
+      --cyan: #197d8b;
+      --shadow: 0 18px 50px rgba(23, 32, 27, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(247, 250, 247, 0.86), rgba(247, 250, 247, 1) 42rem),
+        radial-gradient(circle at 15% 8%, rgba(47, 125, 81, 0.16), transparent 20rem),
+        radial-gradient(circle at 78% 18%, rgba(184, 80, 104, 0.16), transparent 22rem),
+        var(--paper);
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(247, 250, 247, 0.82);
+      border-bottom: 1px solid rgba(217, 226, 220, 0.86);
+    }
+
+    .topbar .shell {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--leaf-deep);
+      border-radius: 50%;
+      position: relative;
+      background: #edf7ef;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: var(--cell);
+    }
+
+    .brand-mark::before {
+      width: 10px;
+      height: 10px;
+      left: 7px;
+      top: 7px;
+    }
+
+    .brand-mark::after {
+      width: 7px;
+      height: 7px;
+      right: 7px;
+      bottom: 8px;
+      background: var(--leaf);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    nav a {
+      text-decoration: none;
+      padding: 8px 0;
+    }
+
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: grid;
+      align-items: center;
+      padding: 54px 0 36px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.96fr) minmax(420px, 1.04fr);
+      gap: 46px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--leaf-deep);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: clamp(42px, 7vw, 82px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 24px 0 0;
+      max-width: 660px;
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.7;
+      word-break: keep-all;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .button {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 18px;
+      border: 1px solid var(--ink);
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .hero-visual {
+      align-self: stretch;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+    }
+
+    .media-frame {
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid rgba(23, 32, 27, 0.16);
+      box-shadow: var(--shadow);
+      background: #0b110e;
+    }
+
+    .media-frame img {
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+
+    .caption-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .caption-item {
+      min-height: 74px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .caption-item strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .caption-item span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    section {
+      padding: 72px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 0.72fr) minmax(260px, 0.28fr);
+      gap: 30px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .section-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      word-break: keep-all;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .metric {
+      min-height: 142px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(23, 32, 27, 0.06);
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .metric .value {
+      margin-top: 16px;
+      font-size: 42px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .metric .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .metric.accent {
+      background: var(--leaf-deep);
+      color: #fff;
+      border-color: var(--leaf-deep);
+    }
+
+    .metric.accent .label,
+    .metric.accent .note {
+      color: rgba(255, 255, 255, 0.76);
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .performance-panel {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .panel-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #edf5ef;
+      color: var(--leaf-deep);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .bar-set {
+      display: grid;
+      gap: 18px;
+    }
+
+    .bar-line {
+      display: grid;
+      gap: 8px;
+    }
+
+    .bar-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .track {
+      height: 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7eee9;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--leaf), var(--cyan));
+    }
+
+    .fill.warn {
+      background: linear-gradient(90deg, var(--amber), var(--cell));
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
+    }
+
+    .gallery-main,
+    .gallery-side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .image-tile {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(23, 32, 27, 0.06);
+    }
+
+    .image-tile img {
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      background: #111;
+    }
+
+    .image-tile.square img {
+      aspect-ratio: 1 / 1;
+    }
+
+    .image-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .datasets {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .dataset {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .dataset ul,
+    .roadmap ul {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .dataset li,
+    .roadmap li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      margin-top: 8px;
+      border-radius: 50%;
+      background: var(--leaf);
+    }
+
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .file {
+      min-height: 116px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .file code {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .file span {
+      display: block;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .issue-callout {
+      padding: 28px;
+      border-radius: 8px;
+      background: #21181a;
+      color: #fff;
+    }
+
+    .issue-callout .big {
+      margin-top: 18px;
+      font-size: clamp(42px, 7vw, 74px);
+      line-height: 0.95;
+      font-weight: 950;
+    }
+
+    .issue-callout p {
+      color: rgba(255, 255, 255, 0.76);
+      line-height: 1.7;
+    }
+
+    .roadmap-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .step-number {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #edf5ef;
+      color: var(--leaf-deep);
+      font-weight: 900;
+    }
+
+    .step strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .step span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      padding: 36px 0 54px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .section-head,
+      .gallery,
+      .roadmap {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .metrics,
+      .file-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .comparison,
+      .datasets {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell {
+        width: min(100% - 28px, 1180px);
+      }
+
+      .topbar {
+        position: static;
+      }
+
+      .topbar .shell {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      nav {
+        justify-content: flex-start;
+      }
+
+      .hero {
+        padding-top: 34px;
+      }
+
+      .hero-grid {
+        gap: 28px;
+      }
+
+      .caption-row,
+      .metrics,
+      .file-grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 50px 0;
+      }
+
+      .metric .value {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>RAIMScope</span>
+      </div>
+      <nav aria-label="보고서 섹션">
+        <a href="#performance">성능</a>
+        <a href="#evidence">결과 이미지</a>
+        <a href="#data">데이터셋</a>
+        <a href="#next">다음 단계</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div class="shell hero-grid">
+        <div>
+          <p class="eyebrow">YOLOv11n · Ultralytics 8.4.48 · Apple Silicon MPS</p>
+          <h1>양파 체세포 분열 탐지 프로젝트</h1>
+          <p class="lead">
+            현미경 이미지와 영상에서 양파 뿌리 세포의 분열 단계를 자동으로 탐지하는 Object Detection 모델입니다.
+            사전학습과 파인튜닝을 분리한 2단계 전이학습 전략으로 실험 흐름을 구성했습니다.
+          </p>
+          <div class="hero-actions">
+            <a class="button" href="#performance">성능 요약 보기</a>
+            <a class="button secondary" href="PROJECT_REPORT.md">원본 보고서</a>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="파인튜닝 모델 추론 이미지">
+          <figure class="media-frame">
+            <img src="runs/detect/onion_project/final_test_results/onion.jpg" alt="양파 세포 현미경 이미지 위에 표시된 모델 탐지 결과">
+          </figure>
+          <div class="caption-row">
+            <div class="caption-item">
+              <strong>100</strong>
+              <span>파인튜닝 완료 Epochs</span>
+            </div>
+            <div class="caption-item">
+              <strong>4</strong>
+              <span>분열 단계 클래스</span>
+            </div>
+            <div class="caption-item">
+              <strong>MPS</strong>
+              <span>Apple Silicon GPU 학습</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="performance">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Model Performance</p>
+            <h2>사전학습은 강했고, 파인튜닝은 다음 실험을 요구합니다.</h2>
+          </div>
+          <p class="section-copy">
+            사전학습 모델은 체세포 분열 패턴을 안정적으로 잡아냈지만, 양파 특화 파인튜닝에서는 mAP가 하락했습니다.
+            데이터 규모와 클래스 분포, 학습률 스케줄을 함께 다시 볼 필요가 있습니다.
+          </p>
+        </div>
+
+        <div class="metrics" aria-label="핵심 지표">
+          <div class="metric accent">
+            <div class="label">Pretrain mAP@50</div>
+            <div class="value">0.790</div>
+            <div class="note">50 / 50 epochs 완료</div>
+          </div>
+          <div class="metric">
+            <div class="label">Finetune mAP@50</div>
+            <div class="value">0.362</div>
+            <div class="note">100 / 100 epochs 완료</div>
+          </div>
+          <div class="metric">
+            <div class="label">Finetune Recall</div>
+            <div class="value">0.512</div>
+            <div class="note">탐지 민감도는 개선 여지 있음</div>
+          </div>
+          <div class="metric">
+            <div class="label">Learning Rate</div>
+            <div class="value">0.001</div>
+            <div class="note">기존 지식 보존을 위해 낮게 설정</div>
+          </div>
+        </div>
+
+        <div class="comparison" style="margin-top: 18px;">
+          <article class="performance-panel">
+            <div class="panel-top">
+              <h3>사전학습</h3>
+              <span class="tag">pretrain_mitosis</span>
+            </div>
+            <div class="bar-set">
+              <div class="bar-line">
+                <div class="bar-meta"><span>mAP@50</span><span>0.790</span></div>
+                <div class="track"><div class="fill" style="width: 79%;"></div></div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-meta"><span>mAP@50-95</span><span>0.764</span></div>
+                <div class="track"><div class="fill" style="width: 76.4%;"></div></div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-meta"><span>Precision</span><span>0.369</span></div>
+                <div class="track"><div class="fill" style="width: 36.9%;"></div></div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-meta"><span>Recall</span><span>0.322</span></div>
+                <div class="track"><div class="fill" style="width: 32.2%;"></div></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="performance-panel">
+            <div class="panel-top">
+              <h3>파인튜닝</h3>
+              <span class="tag">finetune_onion_phases-3</span>
+            </div>
+            <div class="bar-set">
+              <div class="bar-line">
+                <div class="bar-meta"><span>mAP@50</span><span>0.362</span></div>
+                <div class="track"><div class="fill warn" style="width: 36.2%;"></div></div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-meta"><span>mAP@50-95</span><span>0.203</span></div>
+                <div class="track"><div class="fill warn" style="width: 20.3%;"></div></div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-meta"><span>Precision</span><span>0.265</span></div>
+                <div class="track"><div class="fill warn" style="width: 26.5%;"></div></div>
+              </div>
+              <div class="bar-line">
+                <div class="bar-meta"><span>Recall</span><span>0.512</span></div>
+                <div class="track"><div class="fill warn" style="width: 51.2%;"></div></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Visual Evidence</p>
+            <h2>학습 곡선과 실제 추론 결과를 한 화면에 모았습니다.</h2>
+          </div>
+          <p class="section-copy">
+            보고서의 숫자가 실제 이미지에서 어떻게 나타나는지 바로 확인할 수 있도록 학습 그래프,
+            혼동행렬, 테스트 이미지를 함께 배치했습니다.
+          </p>
+        </div>
+
+        <div class="gallery">
+          <div class="gallery-main">
+            <figure class="image-tile">
+              <img src="runs/detect/onion_project/finetune_onion_phases-3/results.png" alt="파인튜닝 학습 결과 그래프">
+              <figcaption class="image-label"><span>파인튜닝 학습 곡선</span><span>100 epochs</span></figcaption>
+            </figure>
+            <figure class="image-tile">
+              <img src="runs/detect/onion_project/pretrain_mitosis/results.png" alt="사전학습 학습 결과 그래프">
+              <figcaption class="image-label"><span>사전학습 학습 곡선</span><span>50 epochs</span></figcaption>
+            </figure>
+          </div>
+          <div class="gallery-side">
+            <figure class="image-tile square">
+              <img src="runs/detect/onion_project/finetune_onion_phases-3/confusion_matrix_normalized.png" alt="파인튜닝 정규화 혼동행렬">
+              <figcaption class="image-label"><span>정규화 혼동행렬</span><span>finetune</span></figcaption>
+            </figure>
+            <figure class="image-tile square">
+              <img src="runs/detect/onion_project/final_test_results-2/AA02.jpg" alt="파인튜닝 모델 최종 테스트 결과">
+              <figcaption class="image-label"><span>최종 테스트</span><span>AA02</span></figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="data">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Datasets & Pipeline</p>
+            <h2>두 데이터셋을 잇는 전이학습 파이프라인.</h2>
+          </div>
+          <p class="section-copy">
+            범용 체세포 분열 패턴을 먼저 학습하고, 이후 양파 세포 데이터에 맞춰 탐지 헤드를 조정하는 흐름입니다.
+          </p>
+        </div>
+
+        <div class="datasets">
+          <article class="dataset">
+            <div class="panel-top">
+              <h3>Pretrain Dataset</h3>
+              <span class="tag">정상</span>
+            </div>
+            <ul>
+              <li><span class="dot"></span><span>Roboflow Universe: <strong>foo / mitosis-wuz7h v3</strong></span></li>
+              <li><span class="dot"></span><span>클래스: ana-telophases, interphase, metaphase, prophase</span></li>
+              <li><span class="dot"></span><span>구조: train, valid, test가 프로젝트 루트에 배치됨</span></li>
+            </ul>
+          </article>
+
+          <article class="dataset">
+            <div class="panel-top">
+              <h3>Finetune Dataset</h3>
+              <span class="tag">정상</span>
+            </div>
+            <ul>
+              <li><span class="dot"></span><span>Roboflow Universe: <strong>noah-mitchell-cr4tb / mitosis-hncem v1</strong></span></li>
+              <li><span class="dot"></span><span>클래스: Anaphase, Metaphase, Prophase, Telophase</span></li>
+              <li><span class="dot"></span><span>구조: dataset_onion/Mitosis/train, valid, test</span></li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="files">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Executable Files</p>
+            <h2>실험 흐름을 재실행할 수 있는 파일들.</h2>
+          </div>
+          <p class="section-copy">
+            데이터 다운로드, 학습, 추론, 영상 분석이 분리되어 있어 다음 실험을 빠르게 이어갈 수 있습니다.
+          </p>
+        </div>
+
+        <div class="file-grid">
+          <div class="file"><code>download_data.py</code><span>사전학습 데이터 다운로드</span></div>
+          <div class="file"><code>download_onion.py</code><span>양파 파인튜닝 데이터 다운로드</span></div>
+          <div class="file"><code>train_pretrain.py</code><span>YOLOv11n 사전학습 실행</span></div>
+          <div class="file"><code>train_finetunning.py</code><span>양파 단계 분류 파인튜닝</span></div>
+          <div class="file"><code>pretest.py</code><span>사전학습 모델 추론 테스트</span></div>
+          <div class="file"><code>test_final.py</code><span>파인튜닝 모델 최종 테스트</span></div>
+          <div class="file"><code>analysis_video.py</code><span>동영상 세포 추적 분석</span></div>
+          <div class="file"><code>analysis_real.py</code><span>실제 데이터 분석 보조</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="next">
+      <div class="shell roadmap">
+        <aside class="issue-callout">
+          <p class="eyebrow" style="color: #ffd4df;">Current Issue</p>
+          <h2>mAP@50 하락</h2>
+          <div class="big">0.79 → 0.36</div>
+          <p>
+            파인튜닝 데이터셋이 작거나 클래스 분포가 불균형할 가능성이 있습니다.
+            다음 실험은 데이터와 학습 전략을 동시에 조정하는 쪽이 효율적입니다.
+          </p>
+        </aside>
+
+        <div>
+          <div class="section-head" style="display: block; margin-bottom: 18px;">
+            <p class="eyebrow">Next Experiments</p>
+            <h2>개선 로드맵</h2>
+          </div>
+          <div class="roadmap-list">
+            <div class="step">
+              <div class="step-number">1</div>
+              <div><strong>정성 평가</strong><span><code>test_final.py</code>를 기준으로 오탐과 미탐 패턴을 먼저 분류합니다.</span></div>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <div><strong>학습 실험 확장</strong><span>Epochs를 150~200으로 늘리고 cosine 스케줄러, warmup, freeze 전략을 비교합니다.</span></div>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <div><strong>모델 크기 비교</strong><span><code>yolo11s.pt</code> 또는 <code>yolo11m.pt</code>로 정확도 상승 여지를 확인합니다.</span></div>
+            </div>
+            <div class="step">
+              <div class="step-number">4</div>
+              <div><strong>실제 영상 검증</strong><span><code>analysis_video.py</code>로 현미경 영상에서 프레임 간 추적 안정성을 점검합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      generated: 2026-05-14 · model: YOLOv11n · framework: Ultralytics 8.4.48 · source: PROJECT_REPORT.md
+    </div>
+  </footer>
+</body>
+</html>

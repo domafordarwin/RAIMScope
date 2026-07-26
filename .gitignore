@@ -1,0 +1,43 @@
+# 환경 변수 / 시크릿
+.env
+
+# 학습 결과물 (용량 큼 — 필요 시 models/ 폴더로 승격해 관리)
+runs/
+_archive/
+
+# 모델 가중치
+*.pt
+
+# 데이터셋 (Roboflow 등에서 재다운로드 가능, 원본은 압축 zip으로 로컬 보관)
+datasets/
+*.zip
+Onion-Cell-Merged-v5-2/
+cell_OB_yolo11/
+phase-of-cell-6/
+Mitosis-1/
+**/train/
+**/valid/
+**/test/
+onion_yolo_project/outData/
+onion_yolo_project/dataset_onion/
+onion_yolo_project/dataset_pretrain/
+
+# 가상환경
+.venv/
+venv/
+
+# Python 캐시
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# 로컬 도구 상태 (bkit/Claude Code 세션 상태, 버전관리 불필요)
+.bkit/
+**/.bkit/
+.claude/settings.local.json
+**/.claude/settings.local.json

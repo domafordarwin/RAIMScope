@@ -1,0 +1,16 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+
+# Training artifacts and downloaded datasets can be regenerated.
+runs/
+onion_project/
+dataset_onion/
+dataset_pretrain/
+kaggle_mitosis_data/
+*.pt
+*.pth
+*.onnx
+*.zip

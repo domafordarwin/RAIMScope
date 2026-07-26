@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 4
+names: ['ana-telophases', 'interphase', 'metaphase', 'prophase']
+
+roboflow:
+  workspace: foo-jh5k2
+  project: mitosis-wuz7h
+  version: 3
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/foo-jh5k2/mitosis-wuz7h/dataset/3
