@@ -29,7 +29,7 @@ python train_improved.py
 RAIMScope/
 ├── train_improved.py        # 현재 활성 학습 파이프라인 (phase-of-cell-6 기반)
 ├── phase-of-cell-6/          # 주력 학습 데이터셋 (Roboflow)
-├── Onion-Cell-Merged-v5-2/   # 병합 시도 데이터셋 (학습 실패, 원인 미확인)
+├── Onion-Cell-Merged-v5-2/   # 학습 자체는 성공(mAP50 0.899)하나 2-class(d/nd) 스키마라 4-class phase 목표와 직접 병합 불가 (자세한 내용: ANALYSIS_REPORT_2026-07-26.md)
 ├── cell_OB_yolo11/           # 보조 데이터셋
 ├── Mitosis-1/                # 보조 데이터셋
 ├── models/                   # 승격된 최고 성능 가중치 보관
@@ -45,4 +45,6 @@ RAIMScope/
 ## 미해결 이슈
 
 - interphase 클래스 탐지율 낮음 (mAP50 0.558) — background로 오탐 43%
-- `Onion-Cell-Merged-v5-2` 병합 데이터 학습 실패 원인 미파악
+- `Onion-Cell-Merged-v5-2`를 phase 분류 목표에 활용하려면 `d`/`nd` 라벨의 재라벨링 또는 계층형·멀티태스크 파이프라인 설계가 필요 (2026-07-26 조사 결과, `ANALYSIS_REPORT_2026-07-26.md` 참고 — 이 데이터셋 자체의 학습은 정상 완료됨)
+- `phase-of-cell-6`의 클래스명 `anaphasae`는 `anaphase`의 오탈자로 추정 — 표시 이름 정정 검토 필요
+- 프로젝트의 4-class 스키마(interphase/metaphase/anaphase/telophase)는 표준 체세포분열 4단계와 완전히 일치하지 않음 (Interphase는 통상 분열 단계로 분류되지 않고, Prophase가 빠져 있음) — 과학적 표준 분류와 구분해서 이해할 것
