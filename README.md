@@ -1,6 +1,6 @@
 # RAIMScope
 
-현미경 이미지에서 세포 분열 단계(interphase / metaphase / anaphase / telophase)를 자동 탐지하는 YOLOv11 기반 프로젝트.
+과학전람회용 깃허브 — 현미경 이미지에서 세포 분열 단계(interphase / metaphase / anaphase / telophase)를 자동 탐지하는 YOLOv11 기반 프로젝트.
 
 ## 현재 최고 성능
 
